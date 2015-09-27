@@ -1,0 +1,804 @@
+<h2>BigInt.cpp</h2>
+<html>
+<head>
+  <title>BigInt.cpp</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<pre>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
+
+<font color="0000ff"><strong>#include <font color="#008000">&lt;string.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;math.h&gt;</font></strong></font>
+
+<font color="0000ff"><strong>#define ull unsigned long long</strong></font>
+<font color="0000ff"><strong>#define MAX 17</strong></font>
+
+<font color="#444444">// Modify here to get bigger numbers!!</font>
+<font color="0000ff"><strong>#define NBLK 20</strong></font>
+
+<font color="0000ff"><strong>#define PX power10(MAX)</strong></font>
+
+<strong>inline</strong> <font color="#2040a0">ull</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="#FF0000">1</font>, <font color="#2040a0">m</font> <font color="4444FF">=</font> <font color="#2040a0">n</font> <font color="4444FF">+</font><font color="#FF0000">1</font><font color="4444FF">;</font>
+  <strong>while</strong> <font color="4444FF">(</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="#2040a0">m</font> <font color="4444FF">&gt;</font> <font color="#FF0000">0</font><font color="4444FF">)</font>
+    <font color="#2040a0">p</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="#FF0000">10</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">p</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>class</strong> <font color="#2040a0">big_int</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">NBLK</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">digits</font><font color="4444FF">;</font>
+
+  <strong>void</strong> <font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">get_blk</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font> <strong>const</strong><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">blk_shift_l</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">blk_shift_r</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">one_digit_mult</font><font color="4444FF">(</font><strong>int</strong>,<font color="#2040a0">big_int</font><font color="4444FF">&amp;</font><font color="4444FF">)</font> <strong>const</strong><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">copy</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">divide</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font>, <font color="#2040a0">big_int</font><font color="4444FF">*</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>public</strong><font color="4444FF">:</font>
+
+  <font color="#2040a0">big_int</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font><font color="4444FF">(</font><strong>const</strong> <strong>char</strong><font color="4444FF">*</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font><font color="4444FF">(</font><font color="#2040a0">ull</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>int</strong> <font color="#2040a0">get_digits</font><font color="4444FF">(</font><font color="4444FF">)</font> <strong>const</strong><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font> <strong>const</strong><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">get_string</font><font color="4444FF">(</font><strong>char</strong><font color="4444FF">*</font><font color="4444FF">)</font> <strong>const</strong><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">get</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font> <strong>const</strong><font color="4444FF">;</font>
+  <strong>void</strong> <font color="#2040a0">shift_l</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font><font color="4444FF">;</font> <font color="#444444">// move to private later</font>
+  <strong>void</strong> <font color="#2040a0">shift_r</font><font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font><font color="4444FF">;</font> <font color="#444444">// move to private later</font>
+
+  <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><strong>operator</strong><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><strong>operator</strong><font color="4444FF">+</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><strong>operator</strong><font color="4444FF">-</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><strong>operator</strong><font color="4444FF">*</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><strong>operator</strong>/<font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><strong>operator</strong><font color="4444FF">%</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>friend</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">&lt;</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+<font color="4444FF"><strong>}</strong></font><font color="4444FF">;</font>
+
+<font color="#444444">// BINARY ARITHMETIC OPERATORS</font>
+<strong>inline</strong> <font color="#2040a0">big_int</font> <strong>operator</strong><font color="4444FF">+</font><font color="4444FF">(</font><font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">l</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">l</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>inline</strong> <font color="#2040a0">big_int</font> <strong>operator</strong><font color="4444FF">*</font><font color="4444FF">(</font><font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">l</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">l</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>inline</strong> <font color="#2040a0">big_int</font> <strong>operator</strong><font color="4444FF">-</font><font color="4444FF">(</font><font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">l</font> <font color="4444FF">-</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">l</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>inline</strong> <font color="#2040a0">big_int</font> <strong>operator</strong>/<font color="4444FF">(</font><font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">l</font> /<font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">l</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>inline</strong> <font color="#2040a0">big_int</font> <strong>operator</strong><font color="4444FF">%</font><font color="4444FF">(</font><font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">l</font> <font color="4444FF">%</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">l</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">// BINARY COMPARISON OPERATORS</font>
+<strong>inline</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">&lt;</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">l</font>.<font color="#2040a0">digits</font> <font color="4444FF">&lt;</font> <font color="#2040a0">r</font>.<font color="#2040a0">digits</font><font color="4444FF">)</font> <strong>return</strong> <strong>true</strong><font color="4444FF">;</font>
+  <strong>else</strong> <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">l</font>.<font color="#2040a0">digits</font> <font color="4444FF">&gt;</font> <font color="#2040a0">r</font>.<font color="#2040a0">digits</font><font color="4444FF">)</font> <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">l</font>.<font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font> 
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">l</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">&lt;</font> <font color="#2040a0">r</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font> <strong>return</strong> <strong>true</strong><font color="4444FF">;</font>
+    <strong>else</strong> <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">l</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">&gt;</font> <font color="#2040a0">r</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font> <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+
+  <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>inline</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">=</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">l</font> <font color="4444FF">&lt;</font> <font color="#2040a0">r</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">r</font> <font color="4444FF">&lt;</font> <font color="#2040a0">l</font><font color="4444FF">)</font> <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+  <strong>return</strong> <strong>true</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>inline</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">&gt;</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> <strong>return</strong> <font color="#2040a0">r</font> <font color="4444FF">&lt;</font> <font color="#2040a0">l</font><font color="4444FF">;</font> <font color="4444FF"><strong>}</strong></font>
+<strong>inline</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">&lt;</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> <strong>return</strong> <font color="4444FF">(</font><font color="#2040a0">l</font> <font color="4444FF">&lt;</font> <font color="#2040a0">r</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">l</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">)</font><font color="4444FF">;</font> <font color="4444FF"><strong>}</strong></font>
+<strong>inline</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">&gt;</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> <strong>return</strong> <font color="4444FF">(</font><font color="#2040a0">l</font> <font color="4444FF">&gt;</font> <font color="#2040a0">r</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">l</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">)</font><font color="4444FF">;</font> <font color="4444FF"><strong>}</strong></font>
+<strong>inline</strong> <strong>bool</strong> <strong>operator</strong><font color="4444FF">!</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">l</font>, <strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> <strong>return</strong> <font color="4444FF">!</font><font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">l</font><font color="4444FF">)</font><font color="4444FF">;</font> <font color="4444FF"><strong>}</strong></font>
+
+
+<font color="#444444">//------------------------------------------------- Private methods</font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">i</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">NBLK</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">digits</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>int</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">get_blk</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n</font><font color="4444FF">)</font> <strong>const</strong> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">blk</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <font color="#444444">// Number of blocks filled</font>
+  <font color="#2040a0">blk</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">n</font> / <font color="#2040a0">MAX</font><font color="4444FF">)</font> <font color="4444FF">-</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+
+  <font color="#444444">// if it is using uncompleted blocks</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">MAX</font><font color="4444FF">)</font>
+    <font color="#2040a0">blk</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+
+  <strong>return</strong> <font color="#2040a0">blk</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>bool</strong> <font color="#2040a0">is_zero</font> <font color="4444FF">=</font> <strong>true</strong><font color="4444FF">;</font>
+
+  <strong>int</strong> <font color="#2040a0">i</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">msb</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">NBLK</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">is_zero</font> <font color="4444FF">=</font> <strong>false</strong><font color="4444FF">;</font>
+      <strong>break</strong><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#444444">// Most Significant Block (msb)</font>
+  <font color="#2040a0">msb</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">digits</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">is_zero</font><font color="4444FF">)</font> <font color="#2040a0">digits</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+    <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">msb</font> <font color="4444FF">&gt;</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">msb</font> /<font color="4444FF">=</font> <font color="#FF0000">10</font><font color="4444FF">;</font>
+      <font color="#2040a0">digits</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+    <font color="#2040a0">digits</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">MAX</font> <font color="4444FF">*</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">shift_l</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">!</font><font color="#2040a0">n</font><font color="4444FF">)</font> <strong>return</strong><font color="4444FF">;</font>
+
+  <strong>int</strong> <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">i</font>, <font color="#2040a0">real_sft</font> <font color="4444FF">=</font> <font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">MAX</font>, <font color="#2040a0">blk_shift</font> <font color="4444FF">=</font> <font color="#2040a0">n</font> / <font color="#2040a0">MAX</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">p_frnt_sft</font> <font color="4444FF">=</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><font color="#2040a0">MAX</font><font color="4444FF">-</font><font color="#2040a0">real_sft</font><font color="4444FF">)</font>, <font color="#2040a0">p_back_sft</font> <font color="4444FF">=</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><font color="#2040a0">real_sft</font><font color="4444FF">)</font>,
+      <font color="#2040a0">shifted</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">ull</font> <font color="#2040a0">new_shifted</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> / <font color="#2040a0">p_frnt_sft</font><font color="4444FF">;</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">shifted</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">p_back_sft</font> <font color="4444FF">*</font> <font color="4444FF">(</font><font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">%</font> <font color="#2040a0">p_frnt_sft</font><font color="4444FF">)</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">shifted</font> <font color="4444FF">=</font> <font color="#2040a0">new_shifted</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">shifted</font><font color="4444FF">)</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">shifted</font><font color="4444FF">;</font>
+  <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">blk_shift_l</font><font color="4444FF">(</font><font color="#2040a0">blk_shift</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">blk_shift_l</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">!</font><font color="#2040a0">n</font><font color="4444FF">)</font> <strong>return</strong><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">i</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">last</font> <font color="4444FF">+</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">-</font><font color="#2040a0">n</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">shift_r</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">!</font><font color="#2040a0">n</font><font color="4444FF">)</font> <strong>return</strong><font color="4444FF">;</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#2040a0">digits</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <strong>return</strong><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>int</strong> <font color="#2040a0">last</font>, <font color="#2040a0">i</font>, <font color="#2040a0">real_sft</font> <font color="4444FF">=</font> <font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">MAX</font>, <font color="#2040a0">blk_shift</font> <font color="4444FF">=</font> <font color="#2040a0">n</font> / <font color="#2040a0">MAX</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">p_frnt_sft</font> <font color="4444FF">=</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><font color="#2040a0">MAX</font><font color="4444FF">-</font><font color="#2040a0">real_sft</font><font color="4444FF">)</font>, <font color="#2040a0">p_back_sft</font> <font color="4444FF">=</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><font color="#2040a0">real_sft</font><font color="4444FF">)</font>,
+      <font color="#2040a0">shifted</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">blk_shift_r</font><font color="4444FF">(</font><font color="#2040a0">blk_shift</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">ull</font> <font color="#2040a0">new_shifted</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">%</font> <font color="#2040a0">p_back_sft</font><font color="4444FF">;</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">shifted</font> <font color="4444FF">*</font> <font color="#2040a0">p_frnt_sft</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> / <font color="#2040a0">p_back_sft</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">shifted</font> <font color="4444FF">=</font> <font color="#2040a0">new_shifted</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">blk_shift_r</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">!</font><font color="#2040a0">n</font><font color="4444FF">)</font> <strong>return</strong><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">i</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> 
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">+</font><font color="#2040a0">n</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font> <font color="#2040a0">last</font><font color="4444FF">-</font><font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">one_digit_mult</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">d</font>, <font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">mult</font><font color="4444FF">)</font> <strong>const</strong> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">j</font>, <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">psafe</font> <font color="4444FF">=</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><font color="#2040a0">MAX</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">mult</font>.<font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">ull</font> <font color="#2040a0">safe_prod</font>, <font color="#2040a0">n</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">safe_prod</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">%</font> <font color="#2040a0">psafe</font><font color="4444FF">;</font>
+    <font color="#2040a0">safe_prod</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">safe_prod</font> <font color="4444FF">*</font> <font color="#2040a0">d</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+    <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#2040a0">safe_prod</font> / <font color="#2040a0">psafe</font><font color="4444FF">;</font>
+    <font color="#2040a0">safe_prod</font> <font color="4444FF">=</font> <font color="#2040a0">safe_prod</font> <font color="4444FF">%</font> <font color="#2040a0">psafe</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">n</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">j</font><font color="4444FF">]</font> / <font color="#2040a0">psafe</font><font color="4444FF">)</font> <font color="4444FF">*</font> <font color="#2040a0">d</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+    <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#2040a0">n</font> / <font color="#FF0000">10</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">mult</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#FF0000">10</font><font color="4444FF">)</font> <font color="4444FF">*</font> <font color="#2040a0">psafe</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="#2040a0">safe_prod</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">carry</font><font color="4444FF">)</font> <font color="#2040a0">mult</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+  <font color="#2040a0">mult</font>.<font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">divide</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font>, <font color="#2040a0">big_int</font> <font color="4444FF">*</font><font color="#2040a0">mod</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">mod</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font>
+      <font color="#2040a0">mod</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">copy</font><font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font> <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">big_int</font> <font color="#2040a0">r_sft</font>, <font color="#2040a0">result</font><font color="4444FF">;</font>
+    <strong>int</strong> <font color="#2040a0">dig_dif</font> <font color="4444FF">=</font> <font color="#2040a0">digits</font> <font color="4444FF">-</font> <font color="#2040a0">r</font>.<font color="#2040a0">digits</font>, <font color="#2040a0">tms</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">r_sft</font>.<font color="#2040a0">copy</font><font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">r_sft</font>.<font color="#2040a0">shift_l</font><font color="4444FF">(</font><font color="#2040a0">dig_dif</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <strong>while</strong> <font color="4444FF">(</font><font color="4444FF">*</font><strong>this</strong> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <strong>while</strong> <font color="4444FF">(</font><font color="4444FF">*</font><strong>this</strong> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#2040a0">r_sft</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+        <font color="4444FF">*</font><strong>this</strong> <font color="4444FF">-</font><font color="4444FF">=</font> <font color="#2040a0">r_sft</font><font color="4444FF">;</font>
+        <font color="#2040a0">tms</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+      <font color="4444FF"><strong>}</strong></font>
+      <font color="#2040a0">big_int</font> <font color="#2040a0">times</font><font color="4444FF">(</font><font color="#2040a0">tms</font><font color="4444FF">)</font><font color="4444FF">;</font>
+      <font color="#2040a0">times</font>.<font color="#2040a0">shift_l</font><font color="4444FF">(</font><font color="#2040a0">dig_dif</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font><font color="4444FF">;</font>
+      <font color="#2040a0">result</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">times</font><font color="4444FF">;</font>
+
+      <font color="#2040a0">tms</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+      <font color="#2040a0">r_sft</font>.<font color="#2040a0">shift_r</font><font color="4444FF">(</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">mod</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#2040a0">NULL</font><font color="4444FF">)</font>
+      <font color="#2040a0">mod</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">copy</font><font color="4444FF">(</font><font color="4444FF">*</font><strong>this</strong><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">copy</font><font color="4444FF">(</font><font color="#2040a0">result</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">copy</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">r</font>.<font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">i</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">r</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <font color="#2040a0">digits</font> <font color="4444FF">=</font> <font color="#2040a0">r</font>.<font color="#2040a0">digits</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">//------------------------------------------------- Constructors</font>
+
+<font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">big_int</font><font color="4444FF">(</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">big_int</font><font color="4444FF">(</font><strong>const</strong> <strong>char</strong><font color="4444FF">*</font> <font color="#2040a0">s</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>int</strong> <font color="#2040a0">len</font> <font color="4444FF">=</font> <font color="#2040a0">strlen</font><font color="4444FF">(</font><font color="#2040a0">s</font><font color="4444FF">)</font>, <font color="#2040a0">i</font>, <font color="#2040a0">cnt</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">p10</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">len</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">cnt</font> / <font color="#2040a0">MAX</font><font color="4444FF">]</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">p10</font> <font color="4444FF">*</font> <font color="4444FF">(</font><font color="#2040a0">s</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">-</font> <font color="#008000">'0'</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">cnt</font> <font color="4444FF">%</font> <font color="#2040a0">MAX</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">MAX</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font> <font color="#2040a0">p10</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+    <strong>else</strong> <font color="#2040a0">p10</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="#FF0000">10</font><font color="4444FF">;</font>
+    <font color="#2040a0">cnt</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#2040a0">digits</font> <font color="4444FF">=</font> <font color="#2040a0">len</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">big_int</font><font color="4444FF">(</font><font color="#2040a0">ull</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">init</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font>
+  <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">//------------------------------------------------- Public methods</font>
+
+<strong>int</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font> <strong>const</strong> <font color="4444FF"><strong>{</strong></font>
+  <strong>return</strong> <font color="#2040a0">get_blk</font><font color="4444FF">(</font><font color="#2040a0">digits</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">get_string</font><font color="4444FF">(</font><strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">s</font><font color="4444FF">)</font> <strong>const</strong> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">i</font><font color="4444FF">;</font>
+
+  <strong>char</strong> <font color="4444FF">*</font><font color="#2040a0">h</font> <font color="4444FF">=</font> <font color="#2040a0">s</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&gt;</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">ull</font> <font color="#2040a0">cp</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">;</font>
+      <strong>int</strong> <font color="#2040a0">len</font> <font color="4444FF">=</font> <font color="#FF0000">0</font>, <font color="#2040a0">k</font><font color="4444FF">;</font>
+
+      <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">cp</font> <font color="4444FF">&gt;</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+        <font color="#2040a0">cp</font> /<font color="4444FF">=</font> <font color="#FF0000">10</font><font color="4444FF">;</font>
+        <font color="#2040a0">len</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+      <font color="4444FF"><strong>}</strong></font>
+      <strong>if</strong> <font color="4444FF">(</font><font color="4444FF">!</font><font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="#2040a0">len</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+
+      <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">k</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">k</font> <font color="4444FF">&lt;</font> <font color="#2040a0">MAX</font><font color="4444FF">-</font><font color="#2040a0">len</font><font color="4444FF">;</font> <font color="#2040a0">k</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+        <font color="4444FF">*</font><font color="#2040a0">h</font> <font color="4444FF">=</font> <font color="#008000">'0'</font><font color="4444FF">;</font>
+        <font color="#2040a0">h</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+      <font color="4444FF"><strong>}</strong></font>
+    <font color="4444FF"><strong>}</strong></font>
+    <font color="#2040a0">sprintf</font><font color="4444FF">(</font><font color="#2040a0">h</font>, <font color="#008000">&quot;%llu&quot;</font>, <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">h</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">strlen</font><font color="4444FF">(</font><font color="#2040a0">h</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>int</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">get</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font><font color="4444FF">)</font> <strong>const</strong> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">b</font> <font color="4444FF">=</font> <font color="#2040a0">get_blk</font><font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">+</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">p</font>, <font color="#2040a0">blk_i</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#2040a0">i</font> <font color="4444FF">%</font> <font color="#2040a0">MAX</font><font color="4444FF">;</font>
+  <font color="#2040a0">p</font> <font color="4444FF">=</font> <font color="#2040a0">power10</font><font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">blk_i</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">b</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <font color="#2040a0">blk_i</font> /<font color="4444FF">=</font> <font color="#2040a0">p</font><font color="4444FF">;</font>
+
+  <strong>return</strong> <font color="#2040a0">blk_i</font> <font color="4444FF">%</font> <font color="#FF0000">10</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>int</strong> <font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><font color="#2040a0">get_digits</font><font color="4444FF">(</font><font color="4444FF">)</font> <strong>const</strong> <font color="4444FF"><strong>{</strong></font> <strong>return</strong> <font color="#2040a0">digits</font><font color="4444FF">;</font> <font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">//------------------------------------------------- Arithmetic Operators</font>
+
+<font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><strong>operator</strong><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">copy</font><font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><strong>operator</strong><font color="4444FF">+</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>int</strong> <font color="#2040a0">i</font>, <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <strong>const</strong> <font color="#2040a0">big_int</font> <font color="4444FF">*</font><font color="#2040a0">gt</font> <font color="4444FF">=</font> <strong>this</strong><font color="4444FF">;</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">digits</font> <font color="4444FF">&lt;</font> <font color="#2040a0">r</font>.<font color="#2040a0">digits</font><font color="4444FF">)</font>
+    <font color="#2040a0">gt</font> <font color="4444FF">=</font> <font color="4444FF">&amp;</font><font color="#2040a0">r</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">gt</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">ull</font> <font color="#2040a0">sum</font> <font color="4444FF">=</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">+</font> <font color="#2040a0">r</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">+</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#2040a0">sum</font> / <font color="#2040a0">PX</font><font color="4444FF">;</font>
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">sum</font> <font color="4444FF">%</font> <font color="#2040a0">PX</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">carry</font><font color="4444FF">)</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+
+  <font color="#444444">// Number of digits of the bigger number plus the carry</font>
+  <font color="#444444">// (if it equals one, means that it overflowed in the previous</font>
+  <font color="#444444">// block, and it needs to use one more)</font>
+  <font color="#2040a0">digits</font> <font color="4444FF">=</font> <font color="#2040a0">gt</font><font color="4444FF">-</font><font color="4444FF">&gt;</font><font color="#2040a0">digits</font> <font color="4444FF">+</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><strong>operator</strong><font color="4444FF">-</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">)</font> <strong>return</strong> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">;</font> <font color="#444444">// still not supported</font>
+
+  <strong>int</strong> <font color="#2040a0">last</font> <font color="4444FF">=</font> <font color="#2040a0">get_last_blk</font><font color="4444FF">(</font><font color="4444FF">)</font>, <font color="#2040a0">i</font>, <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>int</strong> <font color="#2040a0">new_carry</font><font color="4444FF">;</font>
+    <font color="#2040a0">ull</font> <font color="#2040a0">rhs</font> <font color="4444FF">=</font> <font color="#2040a0">r</font>.<font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">rhs</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">carry</font><font color="4444FF">;</font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">&lt;</font> <font color="#2040a0">rhs</font><font color="4444FF">)</font> <font color="#2040a0">new_carry</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+    <strong>else</strong> <font color="#2040a0">new_carry</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#2040a0">last</font><font color="4444FF">)</font>  <font color="#444444">// all other blocks beside 'last' are completed</font>
+      <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">new_carry</font> <font color="4444FF">*</font> <font color="#2040a0">PX</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">blk</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">-</font><font color="4444FF">=</font> <font color="#2040a0">rhs</font><font color="4444FF">;</font>
+    <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#2040a0">new_carry</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#2040a0">att_digits</font><font color="4444FF">(</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><strong>operator</strong><font color="4444FF">*</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">big_int</font> <font color="#2040a0">mult</font>, <font color="#2040a0">result</font><font color="4444FF">;</font>
+  <strong>int</strong> <font color="#2040a0">i</font>, <font color="#2040a0">j</font>, <font color="#2040a0">carry</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">r</font>.<font color="#2040a0">digits</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>int</strong> <font color="#2040a0">d</font> <font color="4444FF">=</font> <font color="#2040a0">r</font>.<font color="#2040a0">get</font><font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">)</font><font color="4444FF">;</font>    
+    <font color="#2040a0">one_digit_mult</font><font color="4444FF">(</font><font color="#2040a0">d</font>, <font color="#2040a0">mult</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">mult</font>.<font color="#2040a0">shift_l</font><font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">result</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">mult</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#2040a0">copy</font><font color="4444FF">(</font><font color="#2040a0">result</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><strong>operator</strong>/<font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">divide</font><font color="4444FF">(</font><font color="#2040a0">r</font>, <font color="#2040a0">NULL</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">big_int</font> <font color="4444FF">&amp;</font><font color="#2040a0">big_int</font><font color="4444FF">:</font><font color="4444FF">:</font><strong>operator</strong><font color="4444FF">%</font><font color="4444FF">=</font><font color="4444FF">(</font><strong>const</strong> <font color="#2040a0">big_int</font> <font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">big_int</font> <font color="#2040a0">mod</font><font color="4444FF">;</font>
+  <font color="#2040a0">divide</font><font color="4444FF">(</font><font color="#2040a0">r</font>, <font color="4444FF">&amp;</font><font color="#2040a0">mod</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">copy</font><font color="4444FF">(</font><font color="#2040a0">mod</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="4444FF">*</font><strong>this</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>int</strong> <font color="#2040a0">main</font><font color="4444FF">(</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">big_int</font> <font color="#2040a0">bi</font><font color="4444FF">(</font><font color="#008000">&quot;1000000000000000000000000000000000000000000000000000000000000000&quot;</font><font color="4444FF">)</font>,
+          <font color="#2040a0">bi2</font><font color="4444FF">(</font><font color="#FF0000">1</font><font color="4444FF">)</font>,
+          <font color="#2040a0">b</font><font color="4444FF">;</font>
+  <strong>char</strong> <font color="#2040a0">s</font><font color="4444FF">[</font><font color="#FF0000">100</font><font color="4444FF">]</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">bi</font> <font color="4444FF">=</font> <font color="#2040a0">bi</font> <font color="4444FF">-</font> <font color="#2040a0">bi2</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">bi</font>.<font color="#2040a0">get_string</font><font color="4444FF">(</font><font color="#2040a0">s</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">printf</font><font color="4444FF">(</font><font color="#008000">&quot;%s<font color="#77dd77">\n</font>&quot;</font>, <font color="#2040a0">s</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. 0.9.1
+</body>
+</html>
+<h2>GamblerRuin.cpp</h2>
+<html>
+<head>
+  <title>GamblerRuin.cpp</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<pre>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;math.h&gt;</font></strong></font>
+
+<strong>double</strong> <font color="#2040a0">fair_gamblers_ruin</font><font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">n1</font>, <strong>int</strong> <font color="#2040a0">n2</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>return</strong> <font color="4444FF">(</font><strong>double</strong><font color="4444FF">)</font><font color="#2040a0">n1</font>/<font color="4444FF">(</font><font color="#2040a0">n1</font><font color="4444FF">+</font><font color="#2040a0">n2</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>double</strong> <font color="#2040a0">unfair_gamblers_ruin</font><font color="4444FF">(</font><strong>double</strong> <font color="#2040a0">p</font>, <strong>int</strong> <font color="#2040a0">n1</font>, <strong>double</strong> <font color="#2040a0">q</font>, <strong>int</strong> <font color="#2040a0">n2</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">p</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">q</font><font color="4444FF">)</font> <strong>return</strong> <font color="#2040a0">fair_gamblers_ruin</font><font color="4444FF">(</font><font color="#2040a0">n1</font>, <font color="#2040a0">n2</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>double</strong> <font color="#2040a0">ratio</font> <font color="4444FF">=</font> <font color="#2040a0">q</font>/<font color="#2040a0">p</font>,
+         <font color="#2040a0">up</font>    <font color="4444FF">=</font> <font color="#FF0000">1</font> <font color="4444FF">-</font> <font color="#2040a0">pow</font><font color="4444FF">(</font><font color="#2040a0">ratio</font>, <font color="#2040a0">n1</font><font color="4444FF">)</font>,
+         <font color="#2040a0">down</font>  <font color="4444FF">=</font> <font color="#FF0000">1</font> <font color="4444FF">-</font> <font color="#2040a0">pow</font><font color="4444FF">(</font><font color="#2040a0">ratio</font>, <font color="#2040a0">n1</font><font color="4444FF">+</font><font color="#2040a0">n2</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">up</font>/<font color="#2040a0">down</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. 0.9.1
+</body>
+</html>
+<h2>Matrix.cpp</h2>
+<html>
+<head>
+  <title>Matrix.cpp</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<pre>
+
+<font color="0000ff"><strong>#define T int</strong></font>
+<strong>void</strong> <font color="#2040a0">mult_</font><font color="4444FF">(</font><font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">m1</font>, <font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">m2</font>, <strong>int</strong> <font color="#2040a0">n</font>, <strong>int</strong> <font color="#2040a0">m</font>, <strong>int</strong> <font color="#2040a0">o</font>, <font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">T</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">n</font><font color="4444FF">*</font><font color="#2040a0">o</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">*</font><font color="#2040a0">o</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> 
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">o</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">T</font> <font color="#2040a0">soma</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+      <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">k</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">k</font> <font color="4444FF">&lt;</font> <font color="#2040a0">m</font><font color="4444FF">;</font> <font color="#2040a0">k</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+        <font color="#2040a0">soma</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">m1</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">m</font> <font color="4444FF">+</font> <font color="#2040a0">k</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">m2</font><font color="4444FF">[</font><font color="#2040a0">k</font><font color="4444FF">*</font><font color="#2040a0">o</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font><font color="4444FF">;</font>
+      <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">m</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">soma</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">o</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">o</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">o</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">mult_NxN</font><font color="4444FF">(</font><font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">m1</font>, <font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">m2</font>, <strong>int</strong> <font color="#2040a0">n</font>, <font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">T</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">n</font><font color="4444FF">*</font><font color="#2040a0">n</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">*</font><font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> 
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">T</font> <font color="#2040a0">soma</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+      <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">k</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">k</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">k</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+        <font color="#2040a0">soma</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">m1</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">k</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">m2</font><font color="4444FF">[</font><font color="#2040a0">k</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font><font color="4444FF">;</font>
+      <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">soma</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">pow_</font><font color="4444FF">(</font><font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">mat</font>, <strong>int</strong> <font color="#2040a0">e</font>, <strong>int</strong> <font color="#2040a0">n</font>, <font color="#2040a0">T</font> <font color="4444FF">*</font><font color="#2040a0">r</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">T</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">n</font><font color="4444FF">*</font><font color="#2040a0">n</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+      <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">j</font><font color="4444FF">)</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+      <strong>else</strong> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">e</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">e</font> <font color="4444FF">%</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="#2040a0">mult_NxN</font><font color="4444FF">(</font><font color="#2040a0">aux</font>, <font color="#2040a0">mat</font>, <font color="#2040a0">n</font>, <font color="#2040a0">aux</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">mult_NxN</font><font color="4444FF">(</font><font color="#2040a0">mat</font>, <font color="#2040a0">mat</font>, <font color="#2040a0">n</font>, <font color="#2040a0">mat</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">e</font> /<font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font>
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">n</font> <font color="4444FF">+</font> <font color="#2040a0">j</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>int</strong> <font color="#2040a0">main</font><font color="4444FF">(</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font><font color="4444FF"><strong>}</strong></font>
+
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. 0.9.1
+</body>
+</html>
+<h2>Primes.cpp</h2>
+<html>
+<head>
+  <title>Primes.cpp</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<pre>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdlib.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;math.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;time.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;vector&gt;</font></strong></font>
+
+<font color="0000ff"><strong>#define ll long long</strong></font>
+
+<strong>using</strong> <strong>namespace</strong> <font color="#2040a0">std</font><font color="4444FF">;</font>
+
+<strong>void</strong> <font color="#2040a0">factorization</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font>, <font color="#2040a0">vector</font><font color="4444FF">&lt;</font><font color="#2040a0">ll</font><font color="4444FF">&gt;</font> <font color="4444FF">&amp;</font><font color="#2040a0">f</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="#2040a0">f</font>.<font color="#2040a0">push_back</font><font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="#2040a0">n</font> /<font color="4444FF">=</font> <font color="#2040a0">i</font> <font color="4444FF">;</font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font> <font color="#FF0000">1</font><font color="4444FF">)</font> <font color="#2040a0">f</font>.<font color="#2040a0">push_back</font><font color="4444FF">(</font><font color="#2040a0">n</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>void</strong> <font color="#2040a0">prime_table</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font>, <font color="#2040a0">vector</font><font color="4444FF">&lt;</font><font color="#2040a0">ll</font><font color="4444FF">&gt;</font> <font color="4444FF">&amp;</font><font color="#2040a0">p</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">pr</font><font color="4444FF">[</font><font color="#2040a0">n</font><font color="4444FF">]</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="#2040a0">pr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">pr</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">pr</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> 
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">pr</font><font color="4444FF">[</font><font color="#2040a0">i</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">p</font>.<font color="#2040a0">push_back</font><font color="4444FF">(</font><font color="#2040a0">i</font><font color="4444FF">)</font><font color="4444FF">;</font>
+      <strong>for</strong><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="#2040a0">i</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#2040a0">i</font><font color="4444FF">)</font> <font color="#2040a0">pr</font><font color="4444FF">[</font><font color="#2040a0">j</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">pow_mod_T</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">a</font>, <font color="#2040a0">ll</font> <font color="#2040a0">b</font>, <font color="#2040a0">ll</font> <font color="#2040a0">T</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">b</font> <font color="4444FF">%</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">*</font> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">;</font>
+    <font color="#2040a0">a</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">)</font> <font color="4444FF">*</font> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">;</font>
+    <font color="#2040a0">b</font> /<font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>return</strong> <font color="#2040a0">r</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>bool</strong> <font color="#2040a0">trial_division</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#FF0000">2</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">3</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font> 
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>return</strong> <strong>true</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>bool</strong> <font color="#2040a0">is_prime</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font>, <strong>int</strong> <font color="#2040a0">k</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">2</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">n</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">3</font><font color="4444FF">)</font> <strong>return</strong> <strong>true</strong><font color="4444FF">;</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">k</font> <font color="4444FF">&gt;</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="#2040a0">k</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">srand</font><font color="4444FF">(</font><font color="#2040a0">time</font><font color="4444FF">(</font><font color="#2040a0">NULL</font><font color="4444FF">)</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">d</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">-</font><font color="#FF0000">1</font>, <font color="#2040a0">s</font> <font color="4444FF">=</font> <font color="#FF0000">0</font>, <font color="#2040a0">a</font><font color="4444FF">;</font>
+
+  <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">d</font> <font color="4444FF">%</font> <font color="#FF0000">2</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">d</font> /<font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>
+    <font color="#2040a0">s</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">&lt;</font> <font color="#2040a0">k</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>bool</strong> <font color="#2040a0">flag</font> <font color="4444FF">=</font> <strong>false</strong><font color="4444FF">;</font>
+    <font color="#2040a0">a</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">rand</font><font color="4444FF">(</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="4444FF">(</font><font color="#2040a0">n</font><font color="4444FF">-</font><font color="#FF0000">3</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="#FF0000">2</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">a</font> <font color="4444FF">=</font> <font color="#2040a0">pow_mod_T</font><font color="4444FF">(</font><font color="#2040a0">a</font>, <font color="#2040a0">d</font>, <font color="#2040a0">n</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">1</font> <font color="4444FF">|</font><font color="4444FF">|</font> <font color="#2040a0">a</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font> <strong>continue</strong><font color="4444FF">;</font>
+    <strong>for</strong> <font color="4444FF">(</font><strong>int</strong> <font color="#2040a0">j</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font> <font color="#2040a0">j</font> <font color="4444FF">&lt;</font> <font color="#2040a0">s</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">;</font> <font color="#2040a0">j</font><font color="4444FF">+</font><font color="4444FF">+</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">a</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="#2040a0">n</font><font color="4444FF">;</font>
+      <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">)</font> <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+      <strong>else</strong> <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+        <font color="#2040a0">flag</font> <font color="4444FF">=</font> <strong>true</strong><font color="4444FF">;</font>
+        <strong>break</strong><font color="4444FF">;</font>
+      <font color="4444FF"><strong>}</strong></font>
+    <font color="4444FF"><strong>}</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">flag</font><font color="4444FF">)</font> <strong>continue</strong><font color="4444FF">;</font>
+    <strong>return</strong> <strong>false</strong><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>return</strong> <strong>true</strong><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. 0.9.1
+</body>
+</html>
+<h2>Util.cpp</h2>
+<html>
+<head>
+  <title>Util.cpp</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<pre>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;stdio.h&gt;</font></strong></font>
+<font color="0000ff"><strong>#include <font color="#008000">&lt;math.h&gt;</font></strong></font>
+
+<font color="0000ff"><strong>#define ll long long</strong></font>
+<font color="0000ff"><strong>#define ull unsigned long long</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">gcd</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">a</font>, <font color="#2040a0">ll</font> <font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">&lt;</font> <font color="#2040a0">b</font><font color="4444FF">)</font> <strong>return</strong> <font color="#2040a0">gcd</font><font color="4444FF">(</font><font color="#2040a0">b</font>, <font color="#2040a0">a</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">b</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <strong>return</strong> <font color="#2040a0">a</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="#2040a0">gcd</font><font color="4444FF">(</font><font color="#2040a0">b</font>, <font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">b</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">lcm</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">a</font>, <font color="#2040a0">ll</font> <font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>return</strong> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">*</font> <font color="#2040a0">b</font><font color="4444FF">)</font>/<font color="#2040a0">gcd</font><font color="4444FF">(</font><font color="#2040a0">a</font>, <font color="#2040a0">b</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">combination</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font>, <font color="#2040a0">ll</font> <font color="#2040a0">k</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">k</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>return</strong> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="#2040a0">combination</font><font color="4444FF">(</font><font color="#2040a0">n</font><font color="4444FF">-</font><font color="#FF0000">1</font>, <font color="#2040a0">k</font><font color="4444FF">-</font><font color="#FF0000">1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">r</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> /<font color="4444FF">=</font> <font color="#2040a0">k</font><font color="4444FF">;</font>
+
+  <strong>return</strong> <font color="#2040a0">r</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">pow_mod_T</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">a</font>, <font color="#2040a0">ll</font> <font color="#2040a0">b</font>, <font color="#2040a0">ll</font> <font color="#2040a0">T</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">b</font> <font color="4444FF">%</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">*</font> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">;</font>
+    <font color="#2040a0">a</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">)</font> <font color="4444FF">*</font> <font color="4444FF">(</font><font color="#2040a0">a</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">)</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="#2040a0">T</font><font color="4444FF">;</font>
+    <font color="#2040a0">b</font> /<font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>return</strong> <font color="#2040a0">r</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">fib</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>double</strong> <font color="#2040a0">SQ5</font> <font color="4444FF">=</font> <font color="#2040a0">sqrt</font><font color="4444FF">(</font><font color="#FF0000">5</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <strong>double</strong> <font color="#2040a0">GR</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#FF0000">1</font> <font color="4444FF">+</font> <font color="#2040a0">SQ5</font><font color="4444FF">)</font> / <font color="#FF0000">2.0</font><font color="4444FF">;</font>
+  <strong>return</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font><font color="4444FF">)</font> <font color="4444FF">(</font><font color="#2040a0">floor</font><font color="4444FF">(</font><font color="#2040a0">pow</font><font color="4444FF">(</font><font color="#2040a0">GR</font>, <font color="#2040a0">n</font><font color="4444FF">)</font> / <font color="#2040a0">SQ5</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="#FF0000">0.5</font><font color="4444FF">)</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">fib_matrix</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">2</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">2</font><font color="4444FF">]</font>, <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">2</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">2</font><font color="4444FF">]</font>, <font color="#2040a0">b</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">-</font><font color="#FF0000">1</font>, <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">2</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">2</font><font color="4444FF">]</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+
+  <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">1</font><font color="4444FF">;</font>
+  <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">b</font> <font color="4444FF">%</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+      <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+      <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+      <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>   
+
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">;</font>
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">;</font>
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">;</font>
+      <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+    <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">*</font> <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">)</font><font color="4444FF">;</font>   
+
+    <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">;</font>
+    <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">;</font>
+    <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">;</font>
+    <font color="#2040a0">a</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font> <font color="4444FF">=</font> <font color="#2040a0">aux</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">1</font><font color="4444FF">]</font><font color="4444FF">;</font>
+    <font color="#2040a0">b</font> /<font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>return</strong> <font color="#2040a0">r</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">[</font><font color="#FF0000">0</font><font color="4444FF">]</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<strong>int</strong> <font color="#2040a0">hamming_weight</font><font color="4444FF">(</font><font color="#2040a0">ull</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">m1</font> <font color="4444FF">=</font> <font color="#FF0000">0x5555555555555555</font>,
+      <font color="#2040a0">m2</font> <font color="4444FF">=</font> <font color="#FF0000">0x3333333333333333</font>,
+      <font color="#2040a0">m4</font> <font color="4444FF">=</font> <font color="#FF0000">0x0f0f0f0f0f0f0f0f</font>,
+      <font color="#2040a0">m8</font> <font color="4444FF">=</font> <font color="#FF0000">0x00ff00ff00ff00ff</font>,
+      <font color="#2040a0">m16</font> <font color="4444FF">=</font> <font color="#FF0000">0x0000ffff0000ffff</font>,
+      <font color="#2040a0">m32</font> <font color="4444FF">=</font> <font color="#FF0000">0x00000000ffffffff</font><font color="4444FF">;</font>
+  <font color="#2040a0">ull</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m1</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font><font color="4444FF">&gt;</font> <font color="#FF0000">1</font><font color="4444FF">)</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m1</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m2</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font><font color="4444FF">&gt;</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m2</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m4</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font><font color="4444FF">&gt;</font> <font color="#FF0000">4</font><font color="4444FF">)</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m4</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m8</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font><font color="4444FF">&gt;</font> <font color="#FF0000">8</font><font color="4444FF">)</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m8</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m16</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font><font color="4444FF">&gt;</font> <font color="#FF0000">16</font><font color="4444FF">)</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m16</font><font color="4444FF">)</font><font color="4444FF">;</font>
+  <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m32</font><font color="4444FF">)</font> <font color="4444FF">+</font> <font color="4444FF">(</font><font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">&gt;</font><font color="4444FF">&gt;</font> <font color="#FF0000">32</font><font color="4444FF">)</font> <font color="4444FF">&amp;</font> <font color="#2040a0">m16</font><font color="4444FF">)</font><font color="4444FF">;</font>
+
+  <strong>return</strong> <font color="4444FF">(</font><strong>int</strong><font color="4444FF">)</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">euler_tot</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">n</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>double</strong> <font color="#2040a0">result</font> <font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font>
+  <strong>for</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">i</font> <font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">;</font> <font color="#2040a0">i</font><font color="4444FF">*</font><font color="#2040a0">i</font> <font color="4444FF">&lt;</font><font color="4444FF">=</font> <font color="#2040a0">n</font><font color="4444FF">;</font> <font color="#2040a0">i</font> <font color="4444FF">+</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#2040a0">result</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="4444FF">(</font><font color="#FF0000">1.0</font> <font color="4444FF">-</font> <font color="4444FF">(</font><font color="#FF0000">1.0</font> / <font color="#2040a0">i</font><font color="4444FF">)</font><font color="4444FF">)</font><font color="4444FF">;</font> 
+    <font color="4444FF"><strong>}</strong></font>
+    <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">%</font> <font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="#2040a0">n</font> /<font color="4444FF">=</font> <font color="#2040a0">i</font><font color="4444FF">;</font>
+    <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">i</font> <font color="4444FF">=</font><font color="4444FF">=</font> <font color="#FF0000">2</font><font color="4444FF">)</font> <font color="#2040a0">i</font><font color="4444FF">-</font><font color="4444FF">-</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>if</strong> <font color="4444FF">(</font><font color="#2040a0">n</font> <font color="4444FF">&gt;</font> <font color="#FF0000">1</font><font color="4444FF">)</font> <font color="#2040a0">result</font> <font color="4444FF">*</font><font color="4444FF">=</font> <font color="4444FF">(</font><font color="#FF0000">1.0</font> <font color="4444FF">-</font> <font color="4444FF">(</font><font color="#FF0000">1.0</font> / <font color="#2040a0">n</font><font color="4444FF">)</font><font color="4444FF">)</font><font color="4444FF">;</font> 
+  <strong>return</strong> <font color="4444FF">(</font><font color="#2040a0">ll</font><font color="4444FF">)</font> <font color="#2040a0">result</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#444444">// inverse of a mod b</font>
+<font color="#2040a0">ll</font> <font color="#2040a0">mod_inverse_tot</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">a</font>, <font color="#2040a0">ll</font> <font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <strong>return</strong> <font color="#2040a0">pow_mod_T</font><font color="4444FF">(</font><font color="#2040a0">a</font>, <font color="#2040a0">euler_tot</font><font color="4444FF">(</font><font color="#2040a0">b</font><font color="4444FF">)</font><font color="4444FF">-</font><font color="#FF0000">1</font>, <font color="#2040a0">b</font><font color="4444FF">)</font><font color="4444FF">;</font>  
+<font color="4444FF"><strong>}</strong></font>
+
+<font color="#2040a0">ll</font> <font color="#2040a0">mod_inverse</font><font color="4444FF">(</font><font color="#2040a0">ll</font> <font color="#2040a0">a</font>, <font color="#2040a0">ll</font> <font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">old_r</font> <font color="4444FF">=</font> <font color="#2040a0">a</font>, <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="#2040a0">b</font><font color="4444FF">;</font>
+  <font color="#2040a0">ll</font> <font color="#2040a0">old_inv</font> <font color="4444FF">=</font> <font color="#FF0000">1</font>, <font color="#2040a0">inv</font> <font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">;</font>
+
+  <strong>while</strong> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">!</font><font color="4444FF">=</font> <font color="#FF0000">0</font><font color="4444FF">)</font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">ll</font> <font color="#2040a0">q</font>, <font color="#2040a0">new_r</font>, <font color="#2040a0">new_inv</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">q</font> <font color="4444FF">=</font> <font color="#2040a0">old_r</font> / <font color="#2040a0">r</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">new_r</font> <font color="4444FF">=</font> <font color="#2040a0">old_r</font> <font color="4444FF">-</font> <font color="4444FF">(</font><font color="#2040a0">r</font> <font color="4444FF">*</font> <font color="#2040a0">q</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">old_r</font> <font color="4444FF">=</font> <font color="#2040a0">r</font><font color="4444FF">;</font>
+    <font color="#2040a0">r</font> <font color="4444FF">=</font> <font color="#2040a0">new_r</font><font color="4444FF">;</font>
+
+    <font color="#2040a0">new_inv</font> <font color="4444FF">=</font> <font color="#2040a0">old_inv</font> <font color="4444FF">-</font> <font color="4444FF">(</font><font color="#2040a0">inv</font> <font color="4444FF">*</font> <font color="#2040a0">q</font><font color="4444FF">)</font><font color="4444FF">;</font>
+    <font color="#2040a0">old_inv</font> <font color="4444FF">=</font> <font color="#2040a0">inv</font><font color="4444FF">;</font>
+    <font color="#2040a0">inv</font> <font color="4444FF">=</font> <font color="#2040a0">new_inv</font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <strong>return</strong> <font color="4444FF">(</font><font color="#2040a0">old_inv</font> <font color="4444FF">+</font> <font color="#2040a0">b</font><font color="4444FF">)</font> <font color="4444FF">%</font> <font color="#2040a0">b</font><font color="4444FF">;</font>
+<font color="4444FF"><strong>}</strong></font>
+
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. 0.9.1
+</body>
+</html>
