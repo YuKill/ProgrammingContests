@@ -1,80 +1,54 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <iostream>
+#include <string>
+#include <set>
 
-typedef struct reindeer {
-  char name[128];
-  int w, age;
-  double height;
-} reindeer;
+using namespace std;
 
-int comp_weight(const void *a, const void *b) {
-  reindeer *l = (reindeer*)a, *r = (reindeer*)b;
-  return (r->w - l->w);
-}
+struct Reindeer {
+  string Name;
+  int Weight;
+  int Age;
+  double Height;
+};
 
-int comp_age(const void *a, const void *b) {
-  reindeer *l = (reindeer*)a, *r = (reindeer*)b;
-  return (l->age - r->age);
-}
-
-int comp_height(const void *a, const void *b) {
-  reindeer *l = (reindeer*)a, *r = (reindeer*)b;
-  return (l->height - r->height);
-}
-
-int comp_name(const void *a, const void *b) {
-  reindeer *l = (reindeer*)a, *r = (reindeer*)b;
-  return strcmp(l->name, r->name);
-}
-
-void print(reindeer all[], int n) {
-  printf("{");
-  for (int i = 0; i < n; i++) {
-    if (i != 0) printf(",");
-    printf("%s", all[i].name);
+struct ReindeerCompare {
+  bool operator()(const Reindeer &Lhs, const Reindeer &Rhs) {
+    if (Lhs.Weight != Rhs.Weight)
+      return Lhs.Weight > Rhs.Weight;
+    if (Lhs.Age != Rhs.Age)
+      return Lhs.Age < Rhs.Age;
+    if (((int)(Lhs.Height * 100)) !=  ((int)(Rhs.Height * 100)))
+      return Lhs.Height < Rhs.Height;
+    if (Lhs.Name != Rhs.Name)
+      return Lhs.Name < Rhs.Name;
+    return false;
   }
-  printf("}\n");
-}
+};
 
 int main() {
-  int tests;
-  scanf("%d", &tests);
+  int T;
+  scanf("%d", &T);
 
-  for (int t = 1; t <= tests; t++) {
-    int n, m;
-    scanf("%d %d", &n, &m);
+  for (int I = 1; I <= T; ++I) {
+    int N, M;
+    scanf("%d %d", &N, &M);
 
-    reindeer all[n];
-    for (int i = 0; i < n; i++)
-      scanf("%s %d %d %lf", all[i].name, &all[i].w, &all[i].age, &all[i].height);
-
-    qsort((void*)&all[0], n, sizeof(reindeer), comp_weight);
-    int w = all[0].w, i = 1;
-    while (all[i].w == w) i++;
-
-    if (i > 1) {
-      qsort((void*)&all[0], i, sizeof(reindeer), comp_age);
-      int age = all[0].age;
-      i = 1;
-      while (all[i].age == age && all[i].w == w) i++;
-
-    
-      if (i > 1) {
-        qsort((void*)&all[0], i, sizeof(reindeer), comp_height);
-        double height = all[0].height;
-        i = 1;
-        while (all[i].height == height && all[i].age == age && all[i].w == w) i++;
-
-        if (i > 1) {
-          qsort((void*)&all[0], i, sizeof(reindeer), comp_name);
-        }
-      }
+    set<Reindeer, ReindeerCompare> Reindeers;
+    for (int J = 0; J < N; ++J) {
+      char Name[128];
+      Reindeer R;
+      scanf("%s %d %d %lf", Name, &R.Weight, &R.Age, &R.Height);
+      R.Name = Name;
+      Reindeers.insert(R);
     }
 
-    printf("CENARIO {%d}\n", t);
-    for (int i = 0; i < m; i++)
-      printf("%d - %s\n", i+1, all[i].name);
-  }
 
+    cout << "CENARIO {" << T << "}" << endl;
+    int Count = 1;
+    for (auto It = Reindeers.begin(), E = Reindeers.end(); It != E; ++It) {
+      if (Count > M) break; 
+      cout << Count++ << " - " << (*It).Name << endl;
+    }
+  }
 }
