@@ -1,5 +1,5 @@
 cpp:
-	g++ *.cpp -g -lm
+	g++ *.cpp -g -std=c++11 -lm
 
 c:
 	gcc *.c -g -lm
