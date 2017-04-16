@@ -1,117 +1,108 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <vector>
-#include <queue>
 
-#define MAX 99999999
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <climits>
+#include <queue>
+#include <stack>
+#include <unordered_set>
 
 using namespace std;
 
-class Node {
-    public:
-        int cur;
-        int oil;
-        int w;
-        Node();
+#define inf INT_MAX
+#define WHT 0
+#define BLK 1
+
+#define sum(x, y) (((x) == inf || (y) == inf) ? inf : (x) + (y))
+
+struct edge_t {
+    int v;
+    int w;
+
+    edge_t() : edge_t(0, 0) {}
+    edge_t(int v, int w) : v(v), w(w) {}
 };
 
-Node::Node() {
-    cur = 0;
-    oil = 0;
-    w = MAX;
-}
+struct vert_t {
+    int v;
+    int dist;
 
-class Comp {
-    public:
-        bool operator() (const Node &l, const Node &r) {
-            return l.w > r.w;
-        }
+    vert_t(int v, int d) : v(v), dist(d) {}
 };
 
-int len(int a[]) {
-    return sizeof(a)/sizeof(int);
-}
+struct comp_t {
+    bool operator()(const vert_t &lhs, const vert_t &rhs) {
+        return lhs.dist >= rhs.dist;
+    }
+};
 
-int dynamic_crazy(int cities, int price[], vector<int> edge[], vector<int> w[], int capacity) {
-    int length = cities;
+int backtrack(int u, int t, int *visited, vector< vector<edge_t> > &adj, vector< vector<int> > &dyn, vector<int> &cost) {
 
-    priority_queue<Node, vector<Node>, Comp> queue;
-    Node nodes[length][capacity+1];
-    Node start;
+    for (int k = 0; k <= t; ++k) {
+        int r = dyn[u][k];
+        for (int i = 0, e = adj[u].size(); i < e; ++i) {
+            int v = adj[u][i].v;
+            int w = adj[u][i].w;
 
-    start.cur = 0;
-    start.oil = capacity;
-    start.w = 0;
+            int old = min(t, k + w);
+            int gasCost = (k - old + w) * cost[u];
 
-    queue.push(start);
-
-    while (!queue.empty()) {
-        Node v = queue.top();
-        queue.pop();
-
-        int adj_count = 0;
-        for (vector<int>::iterator it = edge[v.cur].begin(); it != edge[v.cur].end(); it++) {
-            int adj = *it;
-            for (int i = 0; i < (capacity - v.oil + 1); i++) {
-
-                int cur_oil = v.oil + i - w[v.cur].at(adj_count);
-                int cur_w = v.w + (i * price[v.cur]);
-                if ((cur_oil >= 0) && ((nodes[adj][i].cur == 0) || (cur_w < nodes[adj][i].w))) {
-                    
-                    Node u;
-
-                    u.cur = adj;
-                    u.oil = cur_oil;
-                    u.w = cur_w;
-
-                    queue.push(u);
-                    nodes[adj][i]= u;
-                }
-            }
-            adj_count++;
+            r = min(r, sum(dyn[v][old], gasCost));
         }
+
+        int lesser = 0;
+        for (int i = 0; i < k; ++i)
+            lesser = (dyn[u][lesser] > dyn[u][i]) ? i : lesser;
+
+        dyn[u][k] = min(r, sum(dyn[u][lesser], (k - lesser) * cost[u]));
     }
 
-    int min = MAX;
-    for (int i = 0; i < capacity; i++) {
-        if (nodes[length-1][i].w < min) 
-            min = nodes[length-1][i].w;
-        printf("----- %d\n", nodes[length-1][i].w);
+    visited[u] = 1;
+    for (int i = 0, e = adj[u].size(); i < e; ++i) {
+        int v = adj[u][i].v;
+
+        if (!visited[v])
+            backtrack(v, t, visited, adj, dyn, cost);
     }
-    
-    if (min == MAX) return -1;
-    return min;
+    visited[u] = 0;
+
+    return 0;
 }
-
 
 int main() {
 
+    for (int n, m, t; cin >> n >> m >> t && (n | m | t);) {
+        vector< vector<edge_t> > adj(n, vector<edge_t>());
 
-    int n_city, n_roads, capacity;
-
-    scanf("%d %d %d", &n_city, &n_roads, &capacity);
-    
-    while ((n_city != 0) && (n_roads != 0) && (capacity != 0)) {
-
-        int price[n_city];
-        vector<int> edge[n_city];
-        vector<int> w[n_city];
-
-        int city_a, city_b, weight;
-        for (int i = 0; i < n_roads; i++) {
-            
-            scanf("%d %d %d", &city_a, &city_b, &weight);
-
-            edge[city_a-1].push_back(city_b-1);
-            w[city_a-1].push_back(weight);
+        for (int i = 0, u, v, c; i < m; ++i) {
+            cin >> u >> v >> c;
+            --u; --v;
+            adj[u].push_back(edge_t(v, c));
+            adj[v].push_back(edge_t(u, c));
         }
 
-        for (int i = 0; i < n_city; i++)
-            scanf("%d", &price[i]);
+        vector<int> cost(n, 0);
+        for (int i = 0; i < n; ++i)
+            cin >> cost[i];
 
-        printf("%d\n", dynamic_crazy(n_city, price, edge, w, capacity));
+        vector< vector<int> > dyn(n, vector<int>(t+1, inf));
+        for (int j = 0; j <= t; ++j)
+            dyn[0][j] = 0;
 
-        scanf("%d %d %d", &n_city, &n_roads, &capacity);
+        int visited[n];
+        memset(visited, 0, n * sizeof(int));
+
+        visited[0] = 1;
+        backtrack(0, t, visited, adj, dyn, cost);
+
+        int eco = inf;
+        for (int i = 0; i <= t; ++i) {
+            eco = min(eco, dyn[n-1][i]);
+        }
+
+        if (eco == inf) cout << "-1" << endl;
+        else cout << eco << endl;
     }
 
+    return 0;
 }
